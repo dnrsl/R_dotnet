@@ -1,4 +1,5 @@
 using DevHabit.Api.Database;
+using DevHabit.Api.Extentions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using OpenTelemetry;
@@ -45,6 +46,8 @@ WebApplication app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
+    await app.ApplyMigrationsAsync();
 }
 
 app.UseHttpsRedirection();

@@ -1,6 +1,6 @@
 ﻿namespace DevHabit.Api.Entities;
 
-public static class Habit
+public sealed class Habit
 {
     public string Id { get; set; }
     public string Name { get; set; } = string.Empty;
@@ -31,7 +31,7 @@ public enum HabitStatus
     Completed = 2
 }
 
-public static class Frequency
+public sealed class Frequency
 {
     public FrequencyType Type {  get; set; }
     public int TimesPerPeriod { get; set; }
@@ -45,13 +45,13 @@ public enum FrequencyType
     Monthly = 3
 }
 
-public static class Target
+public sealed class Target
 {
     public int Value { get; set; }
     public string Unit { get; set; }
 }
 
-public static class Milestone
+public sealed class Milestone
 {
     public int Target {  get; set; }
     public int Current { get; set; }
