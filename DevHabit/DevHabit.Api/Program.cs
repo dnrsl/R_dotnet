@@ -2,6 +2,7 @@ using DevHabit.Api.Database;
 using DevHabit.Api.Extentions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -11,7 +12,11 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.ReturnHttpNotAcceptable = true;
+})
+.AddXmlSerializerFormatters();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -27,7 +32,8 @@ builder.Services.AddOpenTelemetry()
 .ConfigureResource(resource => resource.AddService(builder.Environment.ApplicationName))
 .WithTracing(tracing => tracing
     .AddHttpClientInstrumentation()
-    .AddAspNetCoreInstrumentation())
+    .AddAspNetCoreInstrumentation()
+    .AddNpgsql())
 .WithMetrics(metrics => metrics
     .AddHttpClientInstrumentation()
     .AddAspNetCoreInstrumentation()
