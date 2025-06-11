@@ -102,7 +102,7 @@ public sealed class HabitsController(ApplicationDbContext dbContext) : Controlle
 
         if (habit is null)
         {
-            return NotFound();
+            return StatusCode(StatusCodes.Status410Gone);
         }
 
         dbContext.Habits.Remove(habit);
