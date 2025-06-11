@@ -1,6 +1,7 @@
 ﻿using DevHabit.Api.Database;
 using DevHabit.Api.DTOs.Habits;
 using DevHabit.Api.Entities;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -50,11 +51,11 @@ public sealed class HabitsController(ApplicationDbContext dbContext) : Controlle
 
         HabitDto habitDto = habit.ToDto();
 
-        return CreatedAtAction(nameof(GetHabit), new { id = habitDto.Id}, habitDto);
+        return CreatedAtAction(nameof(GetHabit), new { id = habitDto.Id }, habitDto);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateHabit(string id, UpdateHabitDto updateHabitDto)
+    public async Task<ActionResult> UpdateHabit(string id, UpdateHabitDto updateHabitDto)
     {
         Habit? habit = await dbContext.Habits.FirstOrDefaultAsync(h => h.Id == id);
         if (habit is null)
@@ -66,6 +67,46 @@ public sealed class HabitsController(ApplicationDbContext dbContext) : Controlle
 
         await dbContext.SaveChangesAsync();
 
+        return NoContent();
+    }
+
+    [HttpPatch("{id}")]
+    public async Task<ActionResult> PatchHabit(string id, JsonPatchDocument<HabitDto> patchDocument)
+    {
+        Habit? habit = await dbContext.Habits.FirstOrDefaultAsync(h => h.Id == id);
+        if (habit is null)
+        {
+            return NotFound();
+        }
+
+        HabitDto habitDto = habit.ToDto();
+        patchDocument.ApplyTo(habitDto, ModelState);
+
+        if (!TryValidateModel(habitDto))
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        habit.Name = habitDto.Name;
+        habit.Description = habitDto.Description;
+        habit.UpdatedAtUtc = DateTime.UtcNow;
+
+        await dbContext.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteHabit(string id)
+    {
+        Habit? habit = await dbContext.Habits.FirstOrDefaultAsync(h => h.Id == id);
+
+        if (habit is null)
+        {
+            return NotFound();
+        }
+
+        dbContext.Habits.Remove(habit);
+        await dbContext.SaveChangesAsync();
         return NoContent();
     }
 }
