@@ -13,7 +13,7 @@ public sealed class GlobalExceptionHandler(IProblemDetailsService problemDetails
             Exception = exception,
             ProblemDetails = new ProblemDetails
             {
-                Title = "Internal server error",
+                Title = "Internal Server Error",
                 Detail = "An error occurerd while processing your request. Please try again."
             }
         });
