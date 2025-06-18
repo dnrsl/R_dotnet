@@ -1,4 +1,5 @@
-﻿using DevHabit.Api.Database;
+﻿using System.Linq.Expressions;
+using DevHabit.Api.Database;
 using DevHabit.Api.DTOs.Habits;
 using DevHabit.Api.Entities;
 using FluentValidation;
@@ -16,10 +17,27 @@ namespace DevHabit.Api.Controllers;
 public sealed class HabitsController(ApplicationDbContext dbContext) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<HabitsCollectionDto>> GetHabits()
+    public async Task<ActionResult<HabitsCollectionDto>> GetHabits([FromQuery] HabitsQueryParameters query)
     {
-        List<HabitDto> habits = await dbContext
-            .Habits
+        query.Search ??= query.Search?.Trim().ToLower();
+
+        Expression<Func<Habit, object>> orderBy = query.Sort switch
+        {
+            "name" => h => h.Name,
+            "description" => h => h.Description,
+            "type" => h => h.Type,
+            "status" => h => h.Status,
+            _ => h => h.Name
+        };
+
+        List<HabitDto> habits = await dbContext.Habits
+            .Where(h => query.Search == null ||
+                        h.Name.ToLower().Contains(query.Search) ||
+                        h.Description != null && h.Description.ToLower().Contains(query.Search))
+            .Where(h => query.Type == null || h.Type == query.Type)
+            .Where(h => query.Status == null || h.Status == query.Status)
+            .OrderBy(orderBy)
+            .ThenByDescending(h => h.Description)
             .Select(HabitQueries.ProjectToDto())
             .ToListAsync();
 
